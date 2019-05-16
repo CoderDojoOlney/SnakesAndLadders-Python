@@ -1,5 +1,4 @@
 import pygame
-import serial
 
 class Tile(pygame.sprite.Sprite):
 
@@ -35,9 +34,6 @@ class MainGame():
     CELLS_PER_COLUMN = 10
 
     def __init__(self):
-        self.serial_port = serial.Serial('COM3')
-        self.baudrate = 115200
-
         pygame.init()
         self.screen = pygame.display.set_mode((MainGame.CELLS_PER_COLUMN * Tile.TILE_SIZE, MainGame.CELLS_PER_ROW * Tile.TILE_SIZE))
         self.grid_cells = self.initialise_grid()
@@ -81,9 +77,6 @@ class MainGame():
             player_sprites.draw(self.screen)
             pygame.display.flip()
 
-            values = self.serial_port.read_all()
-
-            # Get the dice value
 
             pygame.time.wait(1000)
             self.move_player(self.players[0], 1)
