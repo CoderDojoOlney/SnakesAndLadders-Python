@@ -2,7 +2,7 @@ import pygame
 import random
 
 TILE_SIZE = 80
-PLAYER_SIZE = 20
+PLAYER_SIZE = 10
 CELLS_PER_ROW = 10
 CELLS_PER_COLUMN = 10
 
@@ -25,16 +25,17 @@ class Tile(pygame.sprite.Sprite):
 
 class PlayerPiece(pygame.sprite.Sprite):
 
-    def __init__(self, colour):
+    def __init__(self, index, colour):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface((PLAYER_SIZE, PLAYER_SIZE))
         self.image.fill(colour)
         self.tile_index = 0
         self.rect = self.image.get_rect()
+        self.offset = (10, 10 + (PLAYER_SIZE + 5) * index)
 
     def set_position(self, tile):
-        self.rect.topleft = tile.rect.move(10, 10).topleft
+        self.rect.topleft = tile.rect.move(self.offset).topleft
 
 class Obstacle(pygame.sprite.Sprite):
 
@@ -114,7 +115,10 @@ class MainGame():
 
     def initialise_players(self):
         group = []
-        group.append(PlayerPiece(pygame.Color(128, 128, 128)))
+        group.append(PlayerPiece(0, pygame.Color(128, 128, 128)))
+        group.append(PlayerPiece(1, pygame.Color(0, 128, 128)))
+        group.append(PlayerPiece(2, pygame.Color(128, 0, 128)))
+        group.append(PlayerPiece(3, pygame.Color(128, 128, 0)))
         return group
 
     def initialise_obstacles(self):
@@ -137,6 +141,8 @@ class MainGame():
         grid_cell_sprites = pygame.sprite.Group(self.grid_cells)
         player_sprites = pygame.sprite.Group(self.players)
         obstacle_sprites = pygame.sprite.Group(self.obstacles)
+
+        seq = 0
         while True:
             grid_cell_sprites.draw(self.screen)
             player_sprites.draw(self.screen)
@@ -144,11 +150,15 @@ class MainGame():
             pygame.display.flip()
 
             pygame.time.wait(1000)
-            self.move_player_steps(self.players[0], 1)
+            player_index = seq % len(self.players)
+            current_player = self.players[player_index]
+            self.move_player_steps(current_player, player_index + 1)
             for o in self.obstacles:
-                if self.players[0].tile_index == o.entry_index:
-                    self.players[0].tile_index = o.exit_index
-                    self.move_player_steps(self.players[0], 0)
+                if current_player.tile_index == o.entry_index:
+                    current_player.tile_index = o.exit_index
+                    self.move_player_steps(current_player, 0)
+
+            seq += 1
 
 if __name__ == "__main__":
     game = MainGame()

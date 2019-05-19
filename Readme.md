@@ -6,11 +6,11 @@ This is a simple snakes and ladders game implemented in python using pygame. It 
 
 * ~~Add support for ladders~~
 * ~~Add support for snakes~~
+* ~~Show the players in different locations in each cell~~
+* ~~Take turns to move players~~
 * Allow obstacles to be randomly positioned
 * Add grid numbers to cells
 * Add a winning condition
-* Show the players in different locations in each cell
-* Take turns to move players
 * Receive the die value from the serial port
 * Animate the movement of the player pieces
 * Replace the basic images with new graphics
