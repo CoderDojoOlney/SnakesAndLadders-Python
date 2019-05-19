@@ -4,7 +4,8 @@ This is a simple snakes and ladders game implemented in python using pygame. It 
 
 ## TODO
 
-* Add support for ladders
+* ~~Add support for ladders~~
+* Allow ladders to be randomly positioned
 * Add support for snakes
 * Add a winning condition
 * Shiw the players in different locations in each cell
