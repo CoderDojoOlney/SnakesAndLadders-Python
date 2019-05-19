@@ -36,7 +36,7 @@ class PlayerPiece(pygame.sprite.Sprite):
     def set_position(self, tile):
         self.rect.topleft = tile.rect.move(10, 10).topleft
 
-class Ladder(pygame.sprite.Sprite):
+class Obstacle(pygame.sprite.Sprite):
 
     def __init__(self, entry_tile, exit_tile):
         pygame.sprite.Sprite.__init__(self)
@@ -56,12 +56,27 @@ class Ladder(pygame.sprite.Sprite):
 
         start_center = Ladder.calculate_relative_point(entry_tile.rect.center, self.rect.topleft)
         end_center = Ladder.calculate_relative_point(exit_tile.rect.center, self.rect.topleft)
+        self.draw_obstacle(start_center, end_center)
+
+    def calculate_relative_point(point, origin):
+        return (point[0] - origin[0], point[1] - origin[1])
+
+    def draw_obstacle(self, start_center, end_center):
+        pass
+
+class Ladder(Obstacle):
+
+    def draw_obstacle(self, start_center, end_center):
         pygame.draw.line(self.image, pygame.Color(0, 255, 0), start_center, end_center, 5)
         pygame.draw.circle(self.image, pygame.Color(0, 255, 0), start_center, 10)
         pygame.draw.circle(self.image, pygame.Color(255, 0, 0), end_center, 10)
 
-    def calculate_relative_point(point, origin):
-        return (point[0] - origin[0], point[1] - origin[1])
+class Snake(Obstacle):
+
+    def draw_obstacle(self, start_center, end_center):
+        pygame.draw.line(self.image, pygame.Color(255, 0, 0), start_center, end_center, 5)
+        pygame.draw.circle(self.image, pygame.Color(0, 255, 0), start_center, 10)
+        pygame.draw.circle(self.image, pygame.Color(255, 0, 0), end_center, 10)
 
 class MainGame():
 
@@ -105,9 +120,13 @@ class MainGame():
     def initialise_obstacles(self):
         obstacles = []
         obstacles.append(Ladder(self.grid_cells[3], self.grid_cells[25]))
-        obstacles.append(Ladder(self.grid_cells[12], self.grid_cells[43]))
+        obstacles.append(Ladder(self.grid_cells[14], self.grid_cells[43]))
         obstacles.append(Ladder(self.grid_cells[34], self.grid_cells[72]))
         obstacles.append(Ladder(self.grid_cells[66], self.grid_cells[96]))
+        obstacles.append(Snake(self.grid_cells[30], self.grid_cells[6]))
+        obstacles.append(Snake(self.grid_cells[61], self.grid_cells[19]))
+        obstacles.append(Snake(self.grid_cells[87], self.grid_cells[51]))
+        obstacles.append(Snake(self.grid_cells[91], self.grid_cells[78]))
         return obstacles
 
     def move_player_steps(self, player, steps):

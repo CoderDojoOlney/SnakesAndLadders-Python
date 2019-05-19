@@ -1,14 +1,15 @@
 # Snakes and Ladders
 
-This is a simple snakes and ladders game implemented in python using pygame. It is intended that the number from the die can be read from a microbitusing serial data.
+This is a simple snakes and ladders game implemented in python using pygame. It is intended that the number from the die can be read from a microbit using serial data.
 
 ## TODO
 
 * ~~Add support for ladders~~
-* Allow ladders to be randomly positioned
-* Add support for snakes
+* ~~Add support for snakes~~
+* Allow obstacles to be randomly positioned
+* Add grid numbers to cells
 * Add a winning condition
-* Shiw the players in different locations in each cell
+* Show the players in different locations in each cell
 * Take turns to move players
 * Receive the die value from the serial port
 * Animate the movement of the player pieces
