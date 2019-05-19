@@ -1,13 +1,16 @@
 import pygame
 
-class Tile(pygame.sprite.Sprite):
+TILE_SIZE = 80
+PLAYER_SIZE = 20
+CELLS_PER_ROW = 10
+CELLS_PER_COLUMN = 10
 
-    TILE_SIZE = 80
+class Tile(pygame.sprite.Sprite):
 
     def __init__(self, x, y, colour):
         pygame.sprite.Sprite.__init__(self)
 
-        self.image = pygame.Surface((Tile.TILE_SIZE, Tile.TILE_SIZE))
+        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
         self.image.fill(colour)
 
         self.rect = self.image.get_rect()
@@ -15,12 +18,10 @@ class Tile(pygame.sprite.Sprite):
 
 class PlayerPiece(pygame.sprite.Sprite):
 
-    PIECE_SIZE = 20
-
     def __init__(self, colour):
         pygame.sprite.Sprite.__init__(self)
 
-        self.image = pygame.Surface((PlayerPiece.PIECE_SIZE, PlayerPiece.PIECE_SIZE))
+        self.image = pygame.Surface((PLAYER_SIZE, PLAYER_SIZE))
         self.image.fill(colour)
         self.tile_index = 0
         self.rect = self.image.get_rect()
@@ -33,7 +34,7 @@ class Ladder(pygame.sprite.Sprite):
     def __init__(self, columns, rows):
         pygame.sprite.Sprite.__init__(self)
 
-        self.image = pygame.Surface((Tile.TILE_SIZE * columns, Tile.TILE_SIZE * rows), pygame.SRCALPHA)
+        self.image = pygame.Surface((TILE_SIZE * columns, TILE_SIZE * rows), pygame.SRCALPHA)
         self.rect = self.image.get_rect()
         pygame.draw.line(self.image, pygame.Color(0, 255, 255), self.rect.bottomleft, self.rect.topright, 5)
 
@@ -47,12 +48,10 @@ class Ladder(pygame.sprite.Sprite):
 
 class MainGame():
 
-    CELLS_PER_ROW = 10
-    CELLS_PER_COLUMN = 10
 
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((MainGame.CELLS_PER_COLUMN * Tile.TILE_SIZE, MainGame.CELLS_PER_ROW * Tile.TILE_SIZE))
+        self.screen = pygame.display.set_mode((CELLS_PER_COLUMN * TILE_SIZE, CELLS_PER_ROW * TILE_SIZE))
         self.grid_cells = self.initialise_grid()
         self.players = self.initialise_players()
         self.obstacles = self.initialise_obstacles()
@@ -64,17 +63,17 @@ class MainGame():
         colors = [pygame.Color(255, 0, 0), pygame.Color(0, 255, 0), pygame.Color(0, 0, 255)]
         group = []
         color_index = 0
-        for y in range(0, Tile.TILE_SIZE * MainGame.CELLS_PER_ROW, Tile.TILE_SIZE):
-            for x in range(0, Tile.TILE_SIZE * MainGame.CELLS_PER_COLUMN, Tile.TILE_SIZE):
+        for y in range(0, TILE_SIZE * CELLS_PER_ROW, TILE_SIZE):
+            for x in range(0, TILE_SIZE * CELLS_PER_COLUMN, TILE_SIZE):
                 group.append(Tile(x, y, colors[color_index % len(colors)]))
                 color_index += 1
         ordered_group = []
-        for y in range(MainGame.CELLS_PER_ROW - 1, -1, -1):
-            rng = range(0, MainGame.CELLS_PER_COLUMN)
+        for y in range(CELLS_PER_ROW - 1, -1, -1):
+            rng = range(0, CELLS_PER_COLUMN)
             if y % 2 == 0:
                 rng = reversed(rng)
             for x in rng:
-                ordered_group.append(group[y * MainGame.CELLS_PER_ROW + x])
+                ordered_group.append(group[y * CELLS_PER_ROW + x])
 
         return ordered_group
 
