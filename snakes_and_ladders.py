@@ -1,5 +1,6 @@
 import pygame
 import random
+import serial
 
 TILE_SIZE = 80
 PLAYER_SIZE = 10
@@ -90,6 +91,9 @@ class MainGame():
         for player in self.players:
             player.tile_index = 0
             player.set_position(self.grid_cells[0])
+        self.serial = serial.Serial('COM7')
+        self.serial.baudrate = 115200
+        self.controllers = [45, 46]
 
     def initialise_grid(self):
         colors = [pygame.Color(255, 200, 200), pygame.Color(200, 255, 200), pygame.Color(200, 200, 255)]
@@ -117,8 +121,8 @@ class MainGame():
         group = []
         group.append(PlayerPiece(0, pygame.Color(128, 128, 128)))
         group.append(PlayerPiece(1, pygame.Color(0, 128, 128)))
-        group.append(PlayerPiece(2, pygame.Color(128, 0, 128)))
-        group.append(PlayerPiece(3, pygame.Color(128, 128, 0)))
+        # group.append(PlayerPiece(2, pygame.Color(128, 0, 128)))
+        # group.append(PlayerPiece(3, pygame.Color(128, 128, 0)))
         return group
 
     def initialise_obstacles(self):
@@ -152,7 +156,15 @@ class MainGame():
             pygame.time.wait(1000)
             player_index = seq % len(self.players)
             current_player = self.players[player_index]
-            self.move_player_steps(current_player, player_index + 1)
+
+            id = -1
+            while id != self.controllers[player_index]:
+                res = self.serial.read(3)
+                id = int(res[0])
+                turn = int(res[1])
+                roll = int(res[2])
+
+            self.move_player_steps(current_player, roll)
             for o in self.obstacles:
                 if current_player.tile_index == o.entry_index:
                     current_player.tile_index = o.exit_index
