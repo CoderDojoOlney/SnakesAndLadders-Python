@@ -6,26 +6,25 @@ USE_SERIAL = False
 SERIAL_PORT = 'COM7'
 SERIAL_BAUD = 115200
 
+PLAYER_COUNT = 2
 TILE_SIZE = 80
 PLAYER_SIZE = 10
 CELLS_PER_ROW = 10
-CELLS_PER_COLUMN = 10
+ROWS_PER_COLUMN = 10
 
 class Tile(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, column, row, colour):
+    def __init__(self, x, y, colour):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
+        self.rect =  self.image.get_rect().move(x, y) 
+
         self.image.fill(colour)
+        black = pygame.Color(0, 0, 0)
+        image_rect = self.image.get_rect()
+        pygame.draw.rect(self.image, black, image_rect, 1)
 
-        self.rect = self.image.get_rect()
-        pygame.draw.rect(self.image, pygame.Color(0, 0, 0), self.rect, 1)
-
-        self.rect.topleft = (x, y)
-
-        self.column = column
-        self.row = row
         self.index = 0
 
 class PlayerPiece(pygame.sprite.Sprite):
@@ -50,14 +49,14 @@ class Obstacle(pygame.sprite.Sprite):
         self.entry_index = entry_tile.index
         self.exit_index = exit_tile.index
 
-        rows = abs(entry_tile.row - exit_tile.row) + 1
-        columns = abs(entry_tile.column - exit_tile.column) + 1
+        top = min(entry_tile.rect.top, exit_tile.rect.top)
+        bottom = max(entry_tile.rect.bottom, exit_tile.rect.bottom)
+        left = min(entry_tile.rect.left, exit_tile.rect.left)
+        right = max(entry_tile.rect.right, exit_tile.rect.right)
 
-        self.image = pygame.Surface((TILE_SIZE * columns, TILE_SIZE * rows), pygame.SRCALPHA)
+        self.image = pygame.Surface((right - left, bottom - top), pygame.SRCALPHA)
         self.rect = self.image.get_rect()
         
-        top = min(entry_tile.rect.top, exit_tile.rect.top)
-        left = min(entry_tile.rect.left, exit_tile.rect.left)
         self.rect.topleft = (left, top)
 
         start_center = Ladder.calculate_relative_point(entry_tile.rect.center, self.rect.topleft)
@@ -88,29 +87,26 @@ class MainGame():
 
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((CELLS_PER_COLUMN * TILE_SIZE, CELLS_PER_ROW * TILE_SIZE))
+        self.screen = pygame.display.set_mode((ROWS_PER_COLUMN * TILE_SIZE, CELLS_PER_ROW * TILE_SIZE))
         self.grid_cells = self.initialise_grid()
         self.players = self.initialise_players()
         self.obstacles = self.initialise_obstacles()
-        for player in self.players:
-            player.tile_index = 0
-            player.set_position(self.grid_cells[0])
         if USE_SERIAL:
-            self.serial = serial.Serial('COM7')
-            self.serial.baudrate = 115200
+            self.serial = serial.Serial(SERIAL_PORT)
+            self.serial.baudrate = SERIAL_BAUD
             self.controllers = [45, 46]
 
     def initialise_grid(self):
         colors = [pygame.Color(255, 200, 200), pygame.Color(200, 255, 200), pygame.Color(200, 200, 255)]
         group = []
         color_index = 0
-        for row in range(0, CELLS_PER_COLUMN):
+        for row in range(0, ROWS_PER_COLUMN):
             for column in range(0, CELLS_PER_ROW):
-                group.append(Tile(column * TILE_SIZE, row * TILE_SIZE, column, row, colors[color_index % len(colors)]))
+                group.append(Tile(column * TILE_SIZE, row * TILE_SIZE, colors[color_index % len(colors)]))
                 color_index += 1
         ordered_group = []
         current_index = 0
-        for row in range(CELLS_PER_COLUMN - 1, -1, -1):
+        for row in range(ROWS_PER_COLUMN - 1, -1, -1):
             rng = range(0, CELLS_PER_ROW)
             if row % 2 == 0:
                 rng = reversed(rng)
@@ -124,10 +120,12 @@ class MainGame():
 
     def initialise_players(self):
         group = []
-        group.append(PlayerPiece(0, pygame.Color(128, 128, 128)))
-        group.append(PlayerPiece(1, pygame.Color(0, 128, 128)))
-        # group.append(PlayerPiece(2, pygame.Color(128, 0, 128)))
-        # group.append(PlayerPiece(3, pygame.Color(128, 128, 0)))
+        colors = [pygame.Color(128, 128, 128), pygame.Color(0, 128, 128), pygame.Color(128, 0, 128), pygame.Color(128, 128, 0)]
+        for i in range(PLAYER_COUNT):
+            player = PlayerPiece(i, colors[i % len(colors)])
+            player.tile_index = 0
+            player.set_position(self.grid_cells[0])
+            group.append(player)
         return group
 
     def initialise_obstacles(self):
@@ -158,7 +156,6 @@ class MainGame():
             obstacle_sprites.draw(self.screen)
             pygame.display.flip()
 
-            pygame.time.wait(1000)
             player_index = seq % len(self.players)
             current_player = self.players[player_index]
 
@@ -170,6 +167,7 @@ class MainGame():
                     turn = int(res[1])
                     roll = int(res[2])
             else:
+                pygame.time.wait(1000)
                 roll = player_index + 1
 
             self.move_player_steps(current_player, roll)
