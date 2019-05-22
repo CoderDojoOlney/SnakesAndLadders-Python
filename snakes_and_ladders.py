@@ -2,6 +2,10 @@ import pygame
 import random
 import serial
 
+USE_SERIAL = False
+SERIAL_PORT = 'COM7'
+SERIAL_BAUD = 115200
+
 TILE_SIZE = 80
 PLAYER_SIZE = 10
 CELLS_PER_ROW = 10
@@ -91,9 +95,10 @@ class MainGame():
         for player in self.players:
             player.tile_index = 0
             player.set_position(self.grid_cells[0])
-        self.serial = serial.Serial('COM7')
-        self.serial.baudrate = 115200
-        self.controllers = [45, 46]
+        if USE_SERIAL:
+            self.serial = serial.Serial('COM7')
+            self.serial.baudrate = 115200
+            self.controllers = [45, 46]
 
     def initialise_grid(self):
         colors = [pygame.Color(255, 200, 200), pygame.Color(200, 255, 200), pygame.Color(200, 200, 255)]
@@ -157,12 +162,15 @@ class MainGame():
             player_index = seq % len(self.players)
             current_player = self.players[player_index]
 
-            id = -1
-            while id != self.controllers[player_index]:
-                res = self.serial.read(3)
-                id = int(res[0])
-                turn = int(res[1])
-                roll = int(res[2])
+            if USE_SERIAL:
+                id = -1
+                while id != self.controllers[player_index]:
+                    res = self.serial.read(3)
+                    id = int(res[0])
+                    turn = int(res[1])
+                    roll = int(res[2])
+            else:
+                roll = player_index + 1
 
             self.move_player_steps(current_player, roll)
             for o in self.obstacles:
