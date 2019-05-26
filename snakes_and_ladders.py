@@ -151,40 +151,49 @@ class MainGame():
                 pygame.quit()
                 sys.exit(0)
 
+    def redraw_screen(self):
+        self.grid_cell_sprites.draw(self.screen)
+        self.player_sprites.draw(self.screen)
+        self.obstacle_sprites.draw(self.screen)
+        pygame.display.flip()
+
+    def perform_roll_and_move(self, player_index, current_player):
+        if USE_SERIAL:
+            id = -1
+            while id != self.controllers[player_index]:
+                res = self.serial.read(3)
+                id = int(res[0])
+                turn = int(res[1])
+                roll = int(res[2])
+        else:
+            pygame.time.wait(1000)
+            roll = player_index + 1
+
+        self.move_player_steps(current_player, roll)
+
+    def check_for_obstacles(self, current_player):
+        for o in self.obstacles:
+            if current_player.tile_index == o.entry_index:
+                current_player.tile_index = o.exit_index
+                self.move_player_steps(current_player, 0)
+
     def start_game(self):
-        grid_cell_sprites = pygame.sprite.Group(self.grid_cells)
-        player_sprites = pygame.sprite.Group(self.players)
-        obstacle_sprites = pygame.sprite.Group(self.obstacles)
+        self.grid_cell_sprites = pygame.sprite.Group(self.grid_cells)
+        self.player_sprites = pygame.sprite.Group(self.players)
+        self.obstacle_sprites = pygame.sprite.Group(self.obstacles)
 
         seq = 0
         while True:
 
             self.handle_events()
 
-            grid_cell_sprites.draw(self.screen)
-            player_sprites.draw(self.screen)
-            obstacle_sprites.draw(self.screen)
-            pygame.display.flip()
-
             player_index = seq % len(self.players)
             current_player = self.players[player_index]
 
-            if USE_SERIAL:
-                id = -1
-                while id != self.controllers[player_index]:
-                    res = self.serial.read(3)
-                    id = int(res[0])
-                    turn = int(res[1])
-                    roll = int(res[2])
-            else:
-                pygame.time.wait(1000)
-                roll = player_index + 1
+            self.perform_roll_and_move(player_index, current_player)
+            self.check_for_obstacles(current_player)
 
-            self.move_player_steps(current_player, roll)
-            for o in self.obstacles:
-                if current_player.tile_index == o.entry_index:
-                    current_player.tile_index = o.exit_index
-                    self.move_player_steps(current_player, 0)
+            self.redraw_screen()
 
             seq += 1
 
