@@ -1,6 +1,7 @@
 import pygame
 import random
 import serial
+import sys
 
 USE_SERIAL = False
 SERIAL_PORT = 'COM7'
@@ -144,6 +145,12 @@ class MainGame():
         player.tile_index += steps
         player.set_position(self.grid_cells[player.tile_index])
 
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit(0)
+
     def start_game(self):
         grid_cell_sprites = pygame.sprite.Group(self.grid_cells)
         player_sprites = pygame.sprite.Group(self.players)
@@ -151,6 +158,9 @@ class MainGame():
 
         seq = 0
         while True:
+
+            self.handle_events()
+
             grid_cell_sprites.draw(self.screen)
             player_sprites.draw(self.screen)
             obstacle_sprites.draw(self.screen)
