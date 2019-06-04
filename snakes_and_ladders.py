@@ -182,12 +182,11 @@ class MainGame():
         self.player_sprites = pygame.sprite.Group(self.players)
         self.obstacle_sprites = pygame.sprite.Group(self.obstacles)
 
-        seq = 0
+        player_index = 0
         while True:
 
             self.handle_events()
 
-            player_index = seq % len(self.players)
             current_player = self.players[player_index]
 
             self.perform_roll_and_move(player_index, current_player)
@@ -195,7 +194,7 @@ class MainGame():
 
             self.redraw_screen()
 
-            seq += 1
+            player_index = (player_index + 1) % len(self.players)
 
 if __name__ == "__main__":
     game = MainGame()
