@@ -12,10 +12,11 @@ TILE_SIZE = 80
 PLAYER_SIZE = 10
 CELLS_PER_ROW = 10
 ROWS_PER_COLUMN = 10
+NUMBER_OF_TILES = CELLS_PER_ROW * ROWS_PER_COLUMN
 
 class Tile(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, colour):
+    def __init__(self, x, y, colour, index):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
@@ -26,7 +27,7 @@ class Tile(pygame.sprite.Sprite):
         image_rect = self.image.get_rect()
         pygame.draw.rect(self.image, black, image_rect, 1)
 
-        self.index = 0
+        self.index = index
 
 class PlayerPiece(pygame.sprite.Sprite):
 
@@ -103,22 +104,22 @@ class MainGame():
         color_index = 0
         for row in range(0, ROWS_PER_COLUMN):
             for column in range(0, CELLS_PER_ROW):
-                group.append(Tile(column * TILE_SIZE, row * TILE_SIZE, colors[color_index % len(colors)]))
+                this_index = self.index_of_cell(row, column)
+                this_tile = Tile(column * TILE_SIZE, row * TILE_SIZE, colors[color_index % len(colors)], this_index)
+                group.append(this_tile)
                 color_index += 1
-        ordered_group = []
-        current_index = 0
-        for row in range(ROWS_PER_COLUMN - 1, -1, -1):
-            rng = range(0, CELLS_PER_ROW)
-            if row % 2 == 0:
-                rng = reversed(rng)
-            for column in rng:
-                this_tile = group[row * CELLS_PER_ROW + column]
-                this_tile.index = current_index
-                ordered_group.append(this_tile)
-                current_index += 1
+        
+        group.sort(key=lambda x: x.index)
 
-        return ordered_group
+        return group
 
+    def index_of_cell(self, row, column):
+        if row % 2 == 0:
+            col_index = column
+        else:
+            col_index = CELLS_PER_ROW - column - 1
+        return NUMBER_OF_TILES - (row * CELLS_PER_ROW)  - col_index - 1
+        
     def initialise_players(self):
         group = []
         colors = [pygame.Color(128, 128, 128), pygame.Color(0, 128, 128), pygame.Color(128, 0, 128), pygame.Color(128, 128, 0)]
