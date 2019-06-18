@@ -8,6 +8,7 @@ SERIAL_PORT = 'COM7'
 SERIAL_BAUD = 115200
 
 PLAYER_COUNT = 2
+FRAMES_PER_SECOND = 30
 TILE_SIZE = 80
 PLAYER_SIZE = 10
 CELLS_PER_ROW = 10
@@ -41,6 +42,25 @@ class PlayerPiece(pygame.sprite.Sprite):
         self.offset = (10, 10 + (PLAYER_SIZE + 5) * index)
 
     def set_position(self, tile):
+        self.rect.topleft = tile.rect.move(self.offset).topleft
+
+    def move_to_tile(self, tile, game):
+
+        start_x = self.rect.left
+        start_y = self.rect.top
+        
+        x_diff = (tile.rect.left + self.offset[0]) - self.rect.left
+        y_diff = (tile.rect.top + self.offset[1]) - self.rect.top
+
+        frames_for_move = FRAMES_PER_SECOND * 2
+        x_rate = x_diff / frames_for_move
+        y_rate = y_diff / frames_for_move
+
+        for i in range(frames_for_move):
+            self.rect.left = start_x + (x_rate * (i + 1))
+            self.rect.top = start_y + (y_rate * (i + 1))
+            game.redraw_screen()
+
         self.rect.topleft = tile.rect.move(self.offset).topleft
 
 class Obstacle(pygame.sprite.Sprite):
@@ -143,9 +163,11 @@ class MainGame():
         return obstacles
 
     def move_player_steps(self, player, steps):
-        player.tile_index += steps
-        player.set_position(self.grid_cells[player.tile_index])
-
+        
+        for i in range(steps):
+            player.tile_index += 1
+            player.move_to_tile(self.grid_cells[player.tile_index], self)
+        
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -176,7 +198,7 @@ class MainGame():
         for o in self.obstacles:
             if current_player.tile_index == o.entry_index:
                 current_player.tile_index = o.exit_index
-                self.move_player_steps(current_player, 0)
+                current_player.move_to_tile(self.grid_cells[current_player.tile_index], game)
 
     def start_game(self):
         self.grid_cell_sprites = pygame.sprite.Group(self.grid_cells)
