@@ -20,7 +20,7 @@ class Tile(pygame.sprite.Sprite):
     def __init__(self, x, y, colour, index):
         pygame.sprite.Sprite.__init__(self)
 
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
+        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
         self.rect =  self.image.get_rect().move(x, y) 
 
         self.image.fill(colour)
@@ -29,6 +29,11 @@ class Tile(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, black, image_rect, 1)
 
         self.index = index
+
+        # Draw the tile index in the top left corner
+        font = pygame.font.SysFont("Arial", 15)
+        text = font.render(str(index + 1), True, pygame.Color(0, 0, 0))
+        self.image.blit(text, (4, 2))
 
 class PlayerPiece(pygame.sprite.Sprite):
 
