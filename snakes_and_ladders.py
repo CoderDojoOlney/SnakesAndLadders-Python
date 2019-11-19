@@ -3,8 +3,8 @@ import random
 import serial
 import sys
 
-USE_SERIAL = False
-SERIAL_PORT = 'COM7'
+USE_SERIAL = True
+SERIAL_PORT = 'COM4'
 SERIAL_BAUD = 115200
 
 PLAYER_COUNT = 2
@@ -121,7 +121,8 @@ class MainGame():
         if USE_SERIAL:
             self.serial = serial.Serial(SERIAL_PORT)
             self.serial.baudrate = SERIAL_BAUD
-            self.controllers = [45, 46]
+            self.controllers = [1, 2]
+            self.spin = [0, 0]
 
     def initialise_grid(self):
         colors = [pygame.Color(255, 200, 200), pygame.Color(200, 255, 200), pygame.Color(200, 200, 255)]
@@ -168,7 +169,6 @@ class MainGame():
         return obstacles
 
     def move_player_steps(self, player, steps):
-        
         for i in range(steps):
             player.tile_index += 1
             player.move_to_tile(self.grid_cells[player.tile_index], self)
@@ -188,11 +188,17 @@ class MainGame():
     def perform_roll_and_move(self, player_index, current_player):
         if USE_SERIAL:
             id = -1
-            while id != self.controllers[player_index]:
+            this_spin = -1
+            roll = 0
+            self.serial.flush()
+            # we need a message from the correct player and which is not from the last roll
+            while ((id != self.controllers[player_index]) or (this_spin == self.spin[player_index])):
                 res = self.serial.read(3)
                 id = int(res[0])
-                turn = int(res[1])
+                this_spin = int(res[1])
                 roll = int(res[2])
+            self.spin[player_index] = this_spin
+            print(id, this_spin, roll)
         else:
             pygame.time.wait(1000)
             roll = player_index + 1
